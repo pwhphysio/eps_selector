@@ -20,8 +20,9 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         .search-box:focus { outline: none; border-color: #3498db; }
 
         .category { margin-bottom: 15px; }
-        .category h3 { padding: 10px 15px; color: white; border-radius: 6px 6px 0 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
-        .category h3 .arrow { font-size: 12px; transition: transform 0.2s; }
+        .category h3 { padding: 10px 15px; color: white; border-radius: 6px 6px 0 0; cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; gap: 8px; }
+        .category h3 .cat-label { flex: 1; }
+        .category h3 .arrow { font-size: 12px; transition: transform 0.2s; flex-shrink: 0; }
         .category h3 .arrow.collapsed { transform: rotate(-90deg); }
         .cat-scoliosis h3 { background: #2980b9; }
         .cat-knee h3 { background: #e74c3c; }
@@ -47,7 +48,24 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         }
         .subcat-header:hover { background: linear-gradient(to right, #d4e6f1, #eaf2f8); }
         .subcat-arrow { font-size: 10px; display: inline-block; transition: transform 0.15s; }
+        .subcat-label { flex: 1; }
         .subcat-exercises { border-bottom: 2px solid #d4e6f1; }
+
+        /* ── Select All buttons ── */
+        .select-all-btn {
+            font-size: 11px; padding: 3px 10px; border-radius: 4px;
+            border: 1px solid rgba(255,255,255,0.5); background: rgba(255,255,255,0.25);
+            color: white; cursor: pointer; white-space: nowrap; font-weight: 600;
+            flex-shrink: 0;
+        }
+        .select-all-btn:hover { background: rgba(255,255,255,0.45); }
+        .subcat-select-all {
+            font-size: 10px; padding: 2px 8px; border-radius: 4px;
+            border: 1px solid #a9cce3; background: white; color: #2471a3;
+            cursor: pointer; white-space: nowrap; font-weight: 600;
+            flex-shrink: 0;
+        }
+        .subcat-select-all:hover { background: #d6eaf8; }
 
         /* ── Unit badges ── */
         .unit-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; font-weight: 600; white-space: nowrap; flex-shrink: 0; }
@@ -55,19 +73,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         .ub-reps { background: #fef9e7; color: #b7950b; }
         .ub-minutes { background: #f4ecf7; color: #7d3c98; }
         .ub-secssets { background: #ebf5fb; color: #2471a3; }
-
-        /* ── Thumbnail styles ── */
-        .exercise-thumb {
-            width: 56px; height: 56px; border-radius: 6px;
-            object-fit: cover; border: 1px solid #e0e0e0;
-            background: #f5f5f5; flex-shrink: 0;
-        }
-        .thumb-placeholder {
-            width: 56px; height: 56px; border-radius: 6px;
-            background: #eef2f7; border: 1px dashed #ccc;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0; color: #bbb; font-size: 20px;
-        }
 
         .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
         .card h2 { margin-bottom: 15px; color: #34495e; }
@@ -79,9 +84,12 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
         .selected-exercise select { padding: 5px; border: 1px solid #ccc; border-radius: 4px; }
         .remove-btn { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
 
-        .generate-btn { display: block; width: 100%; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; margin-bottom: 20px; }
+        .btn-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .generate-btn { flex: 1; padding: 15px; background: #27ae60; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; }
         .generate-btn:hover { background: #219a52; }
         .generate-btn:disabled { background: #95a5a6; cursor: not-allowed; }
+        .reset-btn { padding: 15px 30px; background: #e74c3c; color: white; border: none; border-radius: 8px; font-size: 18px; cursor: pointer; }
+        .reset-btn:hover { background: #c0392b; }
 
         .output { text-align: center; display: none; }
         #qrcode { display: inline-block; margin: 20px auto; }
@@ -94,9 +102,6 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 
         .empty-msg { color: #999; font-style: italic; padding: 15px; text-align: center; }
 
-        /* ── Selected-exercise unit label ── */
-        .sel-unit-tag { font-size: 10px; padding: 2px 6px; border-radius: 8px; background: #eee; color: #666; margin-left: 4px; }
-
         @media print {
             .no-print { display: none !important; }
             .output { display: block !important; box-shadow: none; }
@@ -106,30 +111,31 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 <body>
 
 <div class="container">
-    <h1>&#x1F3E5; Exercise Plan Generator</h1>
+    <h1>Exercise Plan Generator</h1>
 
-    <input type="text" class="search-box no-print" id="searchBox" placeholder="&#x1F50D; Search exercises (e.g. plank, sc08, chest...)">
+    <input type="text" class="search-box no-print" id="searchBox" placeholder="Search exercises (e.g. plank, sc08, chest...)">
 
     <div id="categories" class="no-print"></div>
 
     <div class="card no-print">
-        <h2>&#x1F4CB; Selected Exercises (<span id="count">0</span>)</h2>
+        <h2>Selected Exercises (<span id="count">0</span>)</h2>
         <div id="selectedList">
             <div class="empty-msg">No exercises selected yet.</div>
         </div>
     </div>
 
-    <button class="generate-btn no-print" id="genBtn" disabled>
-        Generate QR Code
-    </button>
+    <div class="btn-row no-print">
+        <button class="generate-btn" id="genBtn" disabled>Generate QR Code</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
+    </div>
 
     <div class="card output" id="output">
-        <h2>&#x1F4F1; Patient Exercise Plan</h2>
+        <h2>Patient Exercise Plan</h2>
         <p>Scan this QR code to view exercises:</p>
         <div id="qrcode"></div>
         <div class="url-box" id="urlBox"></div>
-        <button class="action-btn btn-copy no-print">&#x1F4CB; Copy Link</button>
-        <button class="action-btn btn-print no-print" onclick="window.print()">&#x1F5A8; Print</button>
+        <button class="action-btn btn-copy no-print">Copy Link</button>
+        <button class="action-btn btn-print no-print" onclick="window.print()">Print</button>
     </div>
 </div>
 
@@ -137,37 +143,10 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
 /* ===========================================
    CONFIGURATION
    =========================================== */
-var BASE_URL = 'https://pwhphysio.github.io/eps';
-
-/* ===========================================
-   EXERCISE THUMBNAIL IMAGES (Base64)
-   =========================================== */
-var EXERCISE_IMAGES = {
-    // ── SCOLIOSIS ──
-    sc01:'',sc02:'',sc03:'',sc04:'',sc05:'',sc06:'',sc07:'',sc08:'',sc09:'',sc10:'',
-    sc11:'',sc12:'',sc13:'',sc14:'',sc15:'',sc16:'',sc17:'',sc18:'',sc19:'',sc20:'',
-    sc21:'',sc22:'',sc23:'',sc24:'',sc25:'',sc26:'',sc27:'',sc28:'',sc29:'',sc30:'',
-    sc31:'',sc32:'',sc33:'',sc34:'',sc35:'',sc36:'',sc37:'',sc38:'',sc39:'',sc40:'',
-    sc41:'',
-    // ── KNEE ──
-    k01:'',k02:'',k03:'',k04:'',k05:'',k06:'',k07:'',k08:'',k09:'',k10:'',
-    // ── SHOULDER ──
-    s01:'',s02:'',s03:'',s04:'',s05:'',s06:'',s07:'',s08:'',s09:'',s10:'',
-    // ── BACK ──
-    b01:'',b02:'',b03:'',b04:'',b05:'',b06:'',b07:'',b08:'',b09:'',b10:'',
-    // ── HIP ──
-    h01:'',h02:'',h03:'',h04:'',h05:'',h06:'',h07:'',h08:'',h09:'',h10:'',
-    // ── NECK ──
-    n01:'',n02:'',n03:'',n04:'',n05:'',n06:'',n07:'',n08:'',n09:'',n10:'',
-    // ── ANKLE ──
-    a01:'',a02:'',a03:'',a04:'',a05:'',a06:'',a07:'',a08:'',a09:'',a10:''
-};
+var BASE_URL = 'https://matthewtse2011.github.io/exs';
 
 /* ===========================================
    EXERCISE DATABASE
-   ===========================================
-   Scoliosis uses subcategories with unit types.
-   Other categories use simple strings (unit = 'sets-reps').
    =========================================== */
 var EXERCISES = {
     scoliosis: {
@@ -313,8 +292,6 @@ var selected = {};
 /* ===========================================
    HELPERS
    =========================================== */
-
-/** Look up any exercise code → { name, unit, cat } */
 function getExerciseInfo(code) {
     for (var cat in EXERCISES) {
         var c = EXERCISES[cat];
@@ -331,7 +308,6 @@ function getExerciseInfo(code) {
     return null;
 }
 
-/** Return sensible default parameters for a given unit type */
 function getDefaults(unit) {
     switch (unit) {
         case 'reps':         return { reps: 5 };
@@ -342,14 +318,6 @@ function getDefaults(unit) {
     }
 }
 
-/** Thumbnail HTML */
-function thumbHTML(code) {
-    var src = EXERCISE_IMAGES[code];
-    if (src) return '<img class="exercise-thumb" src="' + src + '" alt="' + code + '">';
-    return '<div class="thumb-placeholder">&#x1F3CB;</div>';
-}
-
-/** Small coloured badge showing the parameter unit type */
 function unitBadgeHTML(unit) {
     var map = {
         'breathing':    ['Breathing', 'ub-breathing'],
@@ -362,16 +330,17 @@ function unitBadgeHTML(unit) {
     return ' <span class="unit-badge ' + info[1] + '">' + info[0] + '</span>';
 }
 
-/** Toggle a subcategory section open/closed */
 function toggleSubcat(el) {
-    var list = el.nextElementSibling;
+    var wrapper = el.closest('.subcat-wrapper');
+    if (!wrapper) return;
+    var list = wrapper.querySelector('.subcat-exercises');
     var arrow = el.querySelector('.subcat-arrow');
+    if (!list) return;
     var isHidden = list.style.display === 'none';
     list.style.display = isHidden ? '' : 'none';
     if (arrow) arrow.textContent = isHidden ? '\u25BC' : '\u25B6';
 }
 
-/** Toggle a whole category open/closed */
 function toggleCategory(el) {
     var list = el.nextElementSibling;
     var arrow = el.querySelector('.arrow');
@@ -379,10 +348,92 @@ function toggleCategory(el) {
     var isHidden = list.style.display === 'none';
     list.style.display = isHidden ? '' : 'none';
     if (arrow) {
-        arrow.textContent = '\u25BC';
         if (!isHidden) { arrow.textContent = '\u25B6'; arrow.classList.add('collapsed'); }
-        else { arrow.classList.remove('collapsed'); }
+        else { arrow.textContent = '\u25BC'; arrow.classList.remove('collapsed'); }
     }
+}
+
+/* ===========================================
+   SELECT ALL / DESELECT ALL
+   =========================================== */
+function selectAllSubcat(subcatKey) {
+    var c = EXERCISES.scoliosis;
+    if (!c || !c.subcats || !c.subcats[subcatKey]) return;
+    var exs = c.subcats[subcatKey].exercises;
+    var codes = Object.keys(exs);
+
+    var allSelected = true;
+    for (var i = 0; i < codes.length; i++) {
+        if (!selected[codes[i]]) { allSelected = false; break; }
+    }
+
+    for (var j = 0; j < codes.length; j++) {
+        var code = codes[j], ex = exs[code];
+        var cb = document.getElementById('cb_' + code);
+        if (allSelected) {
+            delete selected[code];
+            if (cb) cb.checked = false;
+        } else {
+            if (!selected[code]) {
+                var unit = ex.unit || 'sets-reps';
+                var defs = getDefaults(unit);
+                defs.name = ex.name;
+                defs.unit = unit;
+                defs.freq = 'daily';
+                selected[code] = defs;
+            }
+            if (cb) cb.checked = true;
+        }
+    }
+    refresh();
+}
+
+function selectAllCat(catKey) {
+    var c = EXERCISES[catKey];
+    if (!c || !c.exercises) return;
+    var codes = Object.keys(c.exercises);
+
+    var allSelected = true;
+    for (var i = 0; i < codes.length; i++) {
+        if (!selected[codes[i]]) { allSelected = false; break; }
+    }
+
+    for (var j = 0; j < codes.length; j++) {
+        var code = codes[j], name = c.exercises[code];
+        var cb = document.getElementById('cb_' + code);
+        if (allSelected) {
+            delete selected[code];
+            if (cb) cb.checked = false;
+        } else {
+            if (!selected[code]) {
+                var defs = getDefaults('sets-reps');
+                defs.name = name;
+                defs.unit = 'sets-reps';
+                defs.freq = 'daily';
+                selected[code] = defs;
+            }
+            if (cb) cb.checked = true;
+        }
+    }
+    refresh();
+}
+
+/* ===========================================
+   RESET
+   =========================================== */
+function resetAll() {
+    selected = {};
+    var cbs = document.querySelectorAll('.exercise-item input[type="checkbox"]');
+    for (var i = 0; i < cbs.length; i++) cbs[i].checked = false;
+    var outputEl = document.getElementById('output');
+    if (outputEl) outputEl.style.display = 'none';
+    var qrDiv = document.getElementById('qrcode');
+    if (qrDiv) qrDiv.innerHTML = '';
+    var urlBox = document.getElementById('urlBox');
+    if (urlBox) urlBox.textContent = '';
+    var searchBox = document.getElementById('searchBox');
+    if (searchBox) { searchBox.value = ''; searchBox.dispatchEvent(new Event('input')); }
+    refresh();
 }
 
 /* ===========================================
@@ -396,36 +447,42 @@ function buildUI() {
     for (var cat in EXERCISES) {
         var c = EXERCISES[cat];
         html += '<div class="category cat-' + cat + '">';
-        html += '<h3 onclick="toggleCategory(this)">' + c.label + ' Exercises <span class="arrow">\u25BC</span></h3>';
-        html += '<div class="exercise-list">';
 
         if (c.hasSubcats) {
-            /* ── Scoliosis-style: subcategory groups ── */
+            html += '<h3 onclick="toggleCategory(this)"><span class="cat-label">' + c.label + ' Exercises</span> <span class="arrow">\u25BC</span></h3>';
+            html += '<div class="exercise-list">';
+
             for (var sc in c.subcats) {
                 var sub = c.subcats[sc];
-                html += '<div class="subcat-header" onclick="toggleSubcat(this)">'
-                      + '<span class="subcat-arrow">\u25B6</span> ' + sub.label + '</div>';
+                html += '<div class="subcat-wrapper">';
+                html += '<div class="subcat-header">'
+                      + '<span class="subcat-arrow">\u25B6</span> '
+                      + '<span class="subcat-label" onclick="toggleSubcat(this.closest(\'.subcat-header\'))">' + sub.label + '</span>'
+                      + '<button class="subcat-select-all" data-selectall-subcat="' + sc + '">Select All</button>'
+                      + '</div>';
                 html += '<div class="subcat-exercises" style="display:none;">';
                 for (var code in sub.exercises) {
                     var ex = sub.exercises[code];
                     var safeName = ex.name.replace(/'/g, '&#39;');
                     html += '<div class="exercise-item" data-s="' + (ex.name + ' ' + code + ' ' + sub.label).toLowerCase() + '">';
                     html += '<input type="checkbox" id="cb_' + code + '" data-code="' + code + '" data-name="' + safeName + '">';
-                    html += thumbHTML(code);
                     html += '<label for="cb_' + code + '">' + ex.name + unitBadgeHTML(ex.unit) + '</label>';
                     html += '<span class="code">' + code + '</span>';
                     html += '</div>';
                 }
-                html += '</div>';
+                html += '</div></div>';
             }
         } else {
-            /* ── Flat list (knee, shoulder, etc.) ── */
+            html += '<h3 onclick="if(!event.target.classList.contains(\'select-all-btn\'))toggleCategory(this)">'
+                  + '<span class="cat-label">' + c.label + ' Exercises</span> '
+                  + '<button class="select-all-btn" data-selectall-cat="' + cat + '">Select All</button>'
+                  + '<span class="arrow">\u25BC</span></h3>';
+            html += '<div class="exercise-list">';
             for (var code2 in c.exercises) {
                 var name = c.exercises[code2];
                 var safeName2 = name.replace(/'/g, '&#39;');
                 html += '<div class="exercise-item" data-s="' + (name + ' ' + code2).toLowerCase() + '">';
                 html += '<input type="checkbox" id="cb_' + code2 + '" data-code="' + code2 + '" data-name="' + safeName2 + '">';
-                html += thumbHTML(code2);
                 html += '<label for="cb_' + code2 + '">' + name + '</label>';
                 html += '<span class="code">' + code2 + '</span>';
                 html += '</div>';
@@ -485,7 +542,6 @@ function refresh() {
         html += '<div class="selected-exercise">';
         html += '<span class="name">' + ex.name + ' <span class="code">' + code + '</span></span>';
 
-        /* ── Parameter inputs based on unit type ── */
         switch (ex.unit) {
             case 'breathing':
                 html += ' <label>Breathing Cycles <input type="number" value="' + (ex.breathingCycles || 5) + '" min="1" max="30" data-field="breathingCycles" data-code="' + code + '"></label>';
@@ -500,14 +556,13 @@ function refresh() {
                 html += ' <label>Sets <input type="number" value="' + (ex.sets || 3) + '" min="1" max="10" data-field="sets" data-code="' + code + '"></label>';
                 html += ' <label>Seconds <input type="number" value="' + (ex.seconds || 30) + '" min="5" max="120" data-field="seconds" data-code="' + code + '"></label>';
                 break;
-            default: /* sets-reps */
+            default:
                 html += ' <label>Sets <input type="number" value="' + (ex.sets || 3) + '" min="1" max="10" data-field="sets" data-code="' + code + '"></label>';
                 html += ' <label>Reps <input type="number" value="' + (ex.reps || 10) + '" min="1" max="30" data-field="reps" data-code="' + code + '"></label>';
                 html += ' <label>Hold(s) <input type="number" value="' + (ex.hold || '') + '" min="0" max="60" placeholder="-" data-field="hold" data-code="' + code + '"></label>';
                 break;
         }
 
-        /* ── Frequency (always shown) ── */
         html += ' <label>Freq <select data-field="freq" data-code="' + code + '">';
         for (var j = 0; j < freqOpts.length; j++) {
             html += '<option value="' + freqOpts[j][0] + '"' + (ex.freq === freqOpts[j][0] ? ' selected' : '') + '>' + freqOpts[j][1] + '</option>';
@@ -545,7 +600,7 @@ function generate() {
             case 'seconds-sets':
                 p += (ex.sets || 3) + 'x' + (ex.seconds || 30);
                 break;
-            default: /* sets-reps */
+            default:
                 p += (ex.sets || 3) + 'x' + (ex.reps || 10);
                 if (ex.hold && ex.hold > 0) p += 'h' + ex.hold;
                 break;
@@ -597,24 +652,35 @@ function initApp() {
     try {
         buildUI();
 
-        /* ── Event Delegation ── */
         document.addEventListener('click', function(e) {
             var target = e.target;
+
+            var subcatKey = target.getAttribute('data-selectall-subcat');
+            if (subcatKey) { e.stopPropagation(); selectAllSubcat(subcatKey); return; }
+
+            var catKey = target.getAttribute('data-selectall-cat');
+            if (catKey) { e.stopPropagation(); selectAllCat(catKey); return; }
+
+            if (target.classList.contains('subcat-label') || target.classList.contains('subcat-arrow')) {
+                var header = target.closest('.subcat-header');
+                if (header) { toggleSubcat(header); return; }
+            }
+            if (target.classList.contains('subcat-header')) { toggleSubcat(target); return; }
+
             if (target.getAttribute('data-remove')) { remove(target.getAttribute('data-remove')); return; }
             if (target.id === 'genBtn') { generate(); return; }
+            if (target.id === 'resetBtn') { resetAll(); return; }
             if (target.classList.contains('btn-copy')) { copyURL(); return; }
         });
 
         document.addEventListener('change', function(e) {
             var target = e.target;
-            /* Checkbox toggle */
             if (target.type === 'checkbox' && target.getAttribute('data-code')) {
                 var code = target.getAttribute('data-code');
                 var name = (target.getAttribute('data-name') || '').replace(/&#39;/g, "'");
                 toggle(code, name);
                 return;
             }
-            /* Number / select fields in the selected list */
             var field = target.getAttribute('data-field');
             var code2 = target.getAttribute('data-code');
             if (field && code2 && selected[code2]) {
@@ -622,20 +688,16 @@ function initApp() {
             }
         });
 
-        /* ── Search ── */
         var searchBox = document.getElementById('searchBox');
         if (searchBox) {
             searchBox.addEventListener('input', function() {
                 var q = this.value.toLowerCase();
 
-                /* Show/hide individual exercise items */
                 var items = document.querySelectorAll('.exercise-item');
                 for (var i = 0; i < items.length; i++) {
                     items[i].style.display = items[i].getAttribute('data-s').indexOf(q) !== -1 ? '' : 'none';
                 }
 
-                /* When searching, expand all subcategories so matches are visible.
-                   When cleared, collapse them back. */
                 var subcatLists = document.querySelectorAll('.subcat-exercises');
                 var subcatHeaders = document.querySelectorAll('.subcat-header');
                 for (var j = 0; j < subcatLists.length; j++) {
@@ -650,7 +712,6 @@ function initApp() {
                     }
                 }
 
-                /* Also expand all main categories when searching */
                 var exLists = document.querySelectorAll('.exercise-list');
                 var catArrows = document.querySelectorAll('.category h3 .arrow');
                 for (var k = 0; k < exLists.length; k++) {
