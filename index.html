@@ -23,7 +23,7 @@ var QRCode;!function(){function a(a){this.mode=c.MODE_8BIT_BYTE,this.data=a,this
             border-top: 6px solid white;
             transition: transform 0.25s ease;
             flex-shrink: 0;
-            margin-right: 4px;}.chevron.collapsed{transform: rotate(-90deg);}.cat-scoliosis h3{background: #2980b9;}.cat-knee h3{background: #e74c3c;}.cat-shoulder h3{background: #2ecc71;}.cat-back h3{background: #9b59b6;}.cat-hip h3{background: #f39c12;}.cat-neck h3{background: #1abc9c;}.cat-ankle h3{background: #e67e22;}.exercise-list{border: 1px solid #ddd; border-top: none;
+            margin-right: 4px;}.chevron.collapsed{transform: rotate(-90deg);}.cat-scoliosis h3{background: #2980b9;}.cat-tfcc h3{background: #34495e;}.cat-knee h3{background: #e74c3c;}.cat-shoulder h3{background: #2ecc71;}.cat-back h3{background: #9b59b6;}.cat-hip h3{background: #f39c12;}.cat-neck h3{background: #1abc9c;}.cat-ankle h3{background: #e67e22;}.exercise-list{border: 1px solid #ddd; border-top: none;
             border-radius: 0 0 6px 6px; background: white; overflow: hidden;}.exercise-list.hidden{display: none;}.exercise-item{display: flex; align-items: center; padding: 10px 15px;
             border-bottom: 1px solid #eee; gap: 10px;}.exercise-item:last-child{border-bottom: none;}.exercise-item:hover{background: #f8f9fa;}.exercise-item input[type="checkbox"]{margin-right: 2px; transform: scale(1.3); cursor: pointer; flex-shrink: 0;}.exercise-item label{flex: 1; cursor: pointer; display: flex; align-items: center; gap: 10px;}.exercise-item .code{color: #999; font-family: monospace; font-size: 12px; flex-shrink: 0;}.subcat-header{padding: 9px 15px 9px 20px;
             background: linear-gradient(to right, #e8f4fd, #f5f9fd);
@@ -142,6 +142,29 @@ var EXERCISES ={scoliosis:{label: "Scoliosis",
                     sc39:{name: "Back Muscles Stretching", unit: "seconds-sets"},
                     sc40:{name: "Gastrocnemius stretch", unit: "seconds-sets"},
                     sc41:{name: "Soleus stretch", unit: "seconds-sets"}}}}},
+    tfcc:{label: "TFCC Rehab",
+        hasSubcats: true,
+        subcats:{"tfcc-phase1":{label: "Phase 1",
+                exercises:{tf01:{name: "Active Range of Motion of Elbow and Fingers in Sugartong Splint"},
+                    tf02:{name: "Isometric TFCC-Friendly Muscle Training (Pronator Quadratus)"},
+                    tf03:{name: "Proximal Muscle Strengthening (Brachioradialis, Triceps)"},
+                    tf04:{name: "Isometric TFCC-Friendly Muscle Training (Extensor Carpi Ulnaris)"}}},
+            "tfcc-phase2":{label: "Phase 2",
+                exercises:{tf05:{name: "Joint Position Sense"},
+                    tf06:{name: "True Balance"},
+                    tf07:{name: "Isometric TFCC-Friendly Muscle Training (Extensor Carpi Ulnaris, Pronator Quadratus)"}}},
+            "tfcc-phase3":{label: "Phase 3",
+                exercises:{tf08:{name: "Wrist Maze"},
+                    tf09:{name: "Isotonic TFCC-Friendly Muscle Training (Concentric \u2192 Eccentric)"},
+                    tf10:{name: "Gentle Grip & Pinch Strengthening with Putty"}}},
+            "tfcc-phase4":{label: "Phase 4",
+                exercises:{tf11:{name: "Proprioception with Perturbation (Bodyblade, Flexbar)"},
+                    tf12:{name: "Grip Strengthening (Powerweb, Putty, Digiflex)"}}},
+            "tfcc-phase5":{label: "Phase 5",
+                exercises:{tf13:{name: "Gyroscope"},
+                    tf14:{name: "Wall Push Up"},
+                    tf15:{name: "Bouncing Weightball on Powerweb"},
+                    tf16:{name: "PNF Patterns with Theraband"}}}}},
     knee:{label: 'Knee',
         exercises:{k01: 'Quad Sets',
             k02: 'Straight Leg Raise',
@@ -240,9 +263,11 @@ function getExerciseInfo(code){for (var cat in EXERCISES){var c = EXERCISES[cat]
     var isHidden = exDiv.classList.contains("hidden");
     if (isHidden){exDiv.classList.remove("hidden");
         if (chevron) chevron.classList.remove("collapsed");}else{exDiv.classList.add("hidden");
-        if (chevron) chevron.classList.add("collapsed");}}function selectAllSubcat(subcatKey){var c = EXERCISES.scoliosis;
-    if (!c || !c.subcats || !c.subcats[subcatKey]) return;
-    var exs = c.subcats[subcatKey].exercises;
+        if (chevron) chevron.classList.add("collapsed");}}function selectAllSubcat(subcatKey){var parentCat = null;
+    for (var catKey in EXERCISES){var c = EXERCISES[catKey];
+        if (c.hasSubcats && c.subcats && c.subcats[subcatKey]){parentCat = c;
+            break;}}if (!parentCat) return;
+    var exs = parentCat.subcats[subcatKey].exercises;
     var codes = Object.keys(exs);
     var allSelected = true;
     for (var i = 0; i < codes.length; i++){if (!selected[codes[i]]){allSelected = false; break;}}for (var j = 0; j < codes.length; j++){var code = codes[j];
